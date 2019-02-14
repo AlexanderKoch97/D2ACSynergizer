@@ -1,0 +1,60 @@
+.chessBoard {
+	height: 10%;	
+	border: 2px inset;
+}
+
+td {
+	border: 2px inset black;
+}
+
+.chessBoard tr td:nth-child(odd) {
+	background-color: lightgrey;
+}
+
+.boniOverview {
+	height: 30%;	
+	width: 50%;
+}
+
+.boniOverview ul {
+	margin: 0;
+	background: lightgrey;
+	font-weight: bold;
+}
+
+.monsterList {
+	height: 60%;
+}
+
+.monsterList tr td:nth-child(odd) {
+	background-color: lightgrey;
+}
+
+.fullWidth {
+	width: 100%;
+}
+
+body {
+	margin: 0;
+	padding: 0;
+}
+
+table {
+	table-layout: fixed;
+}
+
+.monsterTitle {
+	display: none;
+	background-color: rgba(255,255,255,0.5);
+	font-weight: bold;
+	pointer-events:none;
+} 
+
+.monsterTd:hover .monsterTitle {
+	display: block;
+}
+
+.monsterTitle {
+	text-align: center;
+	width: 100%;
+}
