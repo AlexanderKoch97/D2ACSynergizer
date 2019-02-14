@@ -374,7 +374,7 @@ function initMonsters() {
 	monsters.notifiedPush(new Monster("Doom", "Demon", undefined, "Warrior", undefined, 4));
 	monsters.notifiedPush(new Monster("Kunkka", "Human", undefined, "Warrior", undefined, 4));
 	monsters.notifiedPush(new Monster("Troll Warlord", "Troll", undefined, "Warrior", undefined, 4));
-	monsters.notifiedPush(new Monster("Light Keeper", "Human", undefined, "Mage", undefined, 4));
+	monsters.notifiedPush(new Monster("Keeper of the Light", "Human", undefined, "Mage", undefined, 4));
 	monsters.notifiedPush(new Monster("Necrophos", "Undead", undefined, "Warlock", undefined, 4));
 	monsters.notifiedPush(new Monster("Templar Assassin", "Elf", undefined, "Assassin", undefined, 4));
 	monsters.notifiedPush(new Monster("Alchemist", "Goblin", undefined, "Warlock", undefined, 4));
