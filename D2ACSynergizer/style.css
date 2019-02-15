@@ -1,6 +1,11 @@
+* {
+	overflow: hidden;
+}
+
 .chessBoard {
-	height: 10%;	
+	height: 5%;	
 	border: 2px inset;
+	background: darkred;
 }
 
 td {
@@ -11,19 +16,66 @@ td {
 	background-color: lightgrey;
 }
 
-.boniOverview {
-	height: 30%;	
-	width: 50%;
+.boniOverview, .forNextLevelOverview {
+	height: 30%;
+	float: left;
+	overflow: auto;
+	background: darkslategrey;
+	font-weight: bold;
+	color: white;
 }
 
-.boniOverview ul {
-	margin: 0;
-	background: lightgrey;
-	font-weight: bold;
+.forNextLevelOverview  {
+	width: calc(50%);
+}
+
+.boniOverview {
+	width: calc(50% - 4px);
+	border-left: 2px inset;
+	border-right: 2px inset;
+}
+
+.forNextLevelOverviewSpecies, .forNextLevelOverviewClasses {
+	width: calc(50% - 4px);
+	float: left;
+	height: 100%;
+	overflow: auto;
+	border-left: 2px inset;
+	border-right: 2px inset;
 }
 
 .monsterList {
-	height: 60%;
+	height: 70%;
+	width: calc(100% - 4px);
+	border: 2px inset;
+}
+
+.monsterSubList {
+	width: calc(20% - 14px);
+	height: 100%;
+	float: left;
+	padding-left: 5px;
+	padding-right: 5px;
+	border-left: 2px inset;
+	border-right: 2px inset;
+	border-bottom: 2px inset;
+}
+
+.monsterSubList:nth-child(odd) {
+	background: darkred;
+}
+
+.monsterSubList:nth-child(even) {
+	background: darkslategrey;
+}
+
+
+.speciesList {
+	height: 25px;
+}
+
+.classesList {
+	height: 25px;
 }
 
 .monsterList tr td:nth-child(odd) {
@@ -50,8 +102,69 @@ table {
 	pointer-events:none;
 } 
 
-.monsterTd:hover .monsterTitle {
+.monsterDiv {
+	width: 50%;
+	height: 80px;
+	float: left;
+	overflow: auto;
+}
+
+.monsterSubList h2 {
+	text-align: center;
+	margin: 0;
+	margin-bottom: 4px;
+	margin-top: 4px;
+}
+
+.monsterSubList input {
+	margin-bottom: 4px;
+}
+
+.monsterDiv:hover .monsterTitle {
 	display: block;
+}
+
+.monsterDivChessBoard {
+	width: 10%;
+	height: 100%;
+	float: left;
+	overflow: auto;
+}
+
+.monsterDivChessBoard:hover .monsterTitle {
+	display: block;
+}
+
+.speciesTd {
+	width: calc(100% / 13);
+	float: left;
+	height: 100%;
+	border: 2px outset;
+	text-align: center;
+	cursor: pointer;
+	background: white;
+}
+
+.speciesTd:hover {
+	background: lightblue;
+}
+
+.classesTd {
+	float: left;
+	height: 100%;
+	width: calc(100% / 10);
+	border: 2px outset;
+	text-align: center;
+	cursor: pointer;
+	background: white;
+}
+
+.classesTd:hover {
+	background: lightblue;
+}
+
+.active {
+	background: lightblue;
 }
 
 .monsterTitle {

@@ -166,7 +166,8 @@ var species = [];
 var classes = [];
 var monsters = [];
 var prioColors = new Map();
-var existingBonis;
+var costColors = new Map();
+var monsterSubLists = new Map();
 
 class Monster {
 	constructor(name, species1, species2, class1, class2, cost)
@@ -331,6 +332,14 @@ function initPrioColors() {
 	prioColors.set(12, "#ff0000");
 }
 
+function initCostColors() {
+	costColors.set(1, "#cccccc");
+	costColors.set(2, "#cccccc");
+	costColors.set(3, "#6666ff");
+	costColors.set(4, "#ff00ff");
+	costColors.set(5, "#ff9933");
+}
+
 function initMonsters() {
 	monsters.notifiedPush(new Monster("Axe", "Orc", undefined, "Warrior", undefined, 1));
 	monsters.notifiedPush(new Monster("Enchantress", "Beast", undefined, "Druid", undefined, 1));
@@ -359,7 +368,7 @@ function initMonsters() {
 	monsters.notifiedPush(new Monster("Furion", "Elf", undefined, "Druid", undefined, 2));
 	monsters.notifiedPush(new Monster("Lycan", "Human", "Beast", "Warrior", undefined, 3));
 	monsters.notifiedPush(new Monster("Venomancer", "Beast", undefined, "Warlock", undefined, 3));
-	monsters.notifiedPush(new Monster("Omni Knight", "Human", undefined, "Knight", 3));
+	monsters.notifiedPush(new Monster("Omni Knight", "Human", undefined, "Knight", undefined, 3));
 	monsters.notifiedPush(new Monster("Razor", "Element", undefined, "Mage", undefined, 3));
 	monsters.notifiedPush(new Monster("Wind Ranger", "Elf", undefined, "Hunter", undefined, 3));
 	monsters.notifiedPush(new Monster("Phantom Assassin", "Elf", undefined, "Assassin", undefined, 3));
@@ -395,6 +404,8 @@ function initMonsters() {
 //----------------------------------------------------------------------------------
 function init() {
 	this.chessBoard = new ChessBoard();
+	
+	initCostColors();
 	initSpecies();
 	initClasses();
 	initPrioColors();
@@ -402,6 +413,7 @@ function init() {
 	
 	createChessBoardTable();
 	createBoniOverview();
+	createForNextLevelOverview();
 	createMonsterList();
 	
 	updateBoni();
@@ -455,7 +467,9 @@ function createChessBoardTable() {
 	
 	this.chessBoard.getActiveMonsters().register(function(monster, typ) {
 		if(typ == "push") {
-			let td = createMonsterTd(monster);
+			let td = createMonsterDiv(monster);
+			td.className = "monsterDivChessBoard";
+//			let td = createMonsterTd(monster);
 			td.id = "cb_" + td.id;
 			td.onclick = function() {
 				window.chessBoard.removeMonster(monster.name);
@@ -469,9 +483,45 @@ function createChessBoardTable() {
 	document.body.appendChild(table);
 }
 
+function setForNextLevelText(forNextLevel) {
+	let arr = Array.from(forNextLevel);
+	arr.sort(function(a, b) {
+	 if(a[1] > b[1]) {
+		 return 1;
+	 }
+	 if(a[1] < b[1]) {
+		 return -1;
+	 }
+	 return 0;
+	});
+	
+	let ovSp = document.getElementById("forNextLevelOverviewSpecies");
+	let ovCl = document.getElementById("forNextLevelOverviewClasses");
+	
+	ovSp.innerHTML = "";
+	ovCl.innerHTML = "";
+	
+	let ulSp = document.createElement("ul");
+	let ulCl = document.createElement("ul");
+	
+	arr.forEach(item => {
+		if(item[1] != 0 && item[1] != undefined) {
+			let li = document.createElement("li");
+			li.innerHTML = item[0] + " - noch " + item[1];
+			if(species.get(item[0])) {
+				ulSp.appendChild(li);
+			} else {
+				ulCl.appendChild(li);
+			}
+		}
+	});
+
+	ovSp.appendChild(ulSp);
+	ovCl.appendChild(ulCl);
+}
+
 function updateBoni() {
 	let prioMons = new Map();
-	
 	existingBonis = new Map();
 	
 	prioMons.set("blue", []);
@@ -492,13 +542,12 @@ function updateBoni() {
 		sCount++;
 		let boni = undefined;
 		let level = undefined;
-		let stage = 0;
 		if(sp.name == "Demon") {
 			if(demonBuff) {
 				if(demonHunterBuff) {
 					forNextLevel.set(sp.name, 1);
 				} else {
-					forNextLevel.set(sp.name, 12);
+					forNextLevel.set(sp.name, undefined);
 				}
 				bonis.push(sp.boni[0].boni);
 			} else {
@@ -506,7 +555,7 @@ function updateBoni() {
 					if(demonHunterBuff) {
 						forNextLevel.set(sp.name, 1);
 					} else {
-						forNextLevel.set(sp.name, 12);
+						forNextLevel.set(sp.name, undefined);
 					}
 				} else {
 					forNextLevel.set(sp.name, 1);
@@ -518,11 +567,9 @@ function updateBoni() {
 					if(boni === undefined) {
 						boni = bo.boni;
 						level = bo.count;
-						stage++;
 					} else {
 						boni += ", " + bo.boni;
 						level = bo.count;
-						stage++;
 					}
 				} else {
 					if(!forNextLevel.get(sp.name)) {
@@ -533,11 +580,11 @@ function updateBoni() {
 						}
 					}
 				}
-				if(forNextLevel.get(sp.name) - window.chessBoard.get(sp.name) < 1) {
-					forNextLevel.set(sp.name, 1);
-				} else {
-					forNextLevel.set(sp.name, forNextLevel.get(sp.name) - window.chessBoard.get(sp.name));
-				}
+//				if(forNextLevel.get(sp.name) - window.chessBoard.get(sp.name) < 1) {
+//					forNextLevel.set(sp.name, 1);
+//				} else {
+//					forNextLevel.set(sp.name, forNextLevel.get(sp.name) - window.chessBoard.get(sp.name));
+//				}
 				if(!forNextLevel.get(sp.name)) {
 					forNextLevel.set(sp.name, 0);
 				}
@@ -545,7 +592,6 @@ function updateBoni() {
 		}
 		if(boni) {
 			bonis.push(sp.name + " (" + level + ") : " + boni);
-			existingBonis.set(sp.name, stage);
 		}
 		if(sCount == classes.length) {
 			speciesFinished = true;
@@ -557,7 +603,6 @@ function updateBoni() {
 		cCount++;
 		let boni = undefined;
 		let level = undefined;
-		let stage = 0;
 		cl.boni.forEach(bo => {
 			if(window.chessBoard.get(cl.name) >= bo.count) {
 				if(boni === undefined) {
@@ -579,7 +624,6 @@ function updateBoni() {
 		});
 		if(boni) {
 			bonis.push(cl.name + " (" + level + ") : " + boni);
-			existingBonis.set(cl.name, stage);
 		}
 		if(cCount == classes.length) {
 			classesFinished = true;
@@ -588,6 +632,10 @@ function updateBoni() {
 	
 	if(classesFinished && speciesFinished) {
 		setBoniText(bonis);
+	}
+	
+	if(classesFinished && speciesFinished) {
+		setForNextLevelText(forNextLevel);
 	}
 	
 	monsters.forEach(monster => {
@@ -637,115 +685,123 @@ function updateBoni() {
 				addLevel += forNextLevel.get(monster.class2.name);
 			}
 		}
-		if(addLevel) {
-			if(addLevel >= 0 && addLevel <= 12) {
-				if(window.chessBoard.isOnBoard(monster.name)) {
-					title == monster.name;
-					document.getElementById(monster.name).style.borderColor = "blue";
-					prioMons.get("blue").push(monster);
-				} else {
-					document.getElementById(monster.name).style.borderColor = prioColors.get(addLevel);
-					prioMons.get(addLevel).push(monster);
-				}
-//				document.getElementById("td" + monster.name).style.opacity = (1 / addLevel);
-			} else {
-				if(window.chessBoard.isOnBoard(monster.name)) {
-					title == monster.name;
-					document.getElementById( monster.name).style.borderColor = "blue";
-					prioMons.get("blue").push(monster);
-				} else {
-					document.getElementById( monster.name).style.borderColor = prioColors.get(12);
-					prioMons.get(12).push(monster);
-				}
-//				document.getElementById("td" + monster.name).style.opacity = (1 / 12);
-			}
-		} else {
-			if(window.chessBoard.isOnBoard(monster.name)) {
-				document.getElementById(monster.name).style.borderColor = "blue";
-				prioMons.get("blue").push(monster);
-			} else {
-				document.getElementById(monster.name).style.borderColor = prioColors.get(1);
-				prioMons.get(1).push(monster);
-			}
-//			document.getElementById("td" + monster.name).style.opacity = (1 / 1);
-		}
+//		if(addLevel) {
+//			if(addLevel >= 0 && addLevel <= 12) {
+//				if(window.chessBoard.isOnBoard(monster.name)) {
+//					title == monster.name;
+//					document.getElementById(monster.name).style.borderColor = "blue";
+//					prioMons.get("blue").push(monster);
+//				} else {
+//					document.getElementById(monster.name).style.borderColor = prioColors.get(addLevel);
+//					prioMons.get(addLevel).push(monster);
+//				}
+////				document.getElementById("td" + monster.name).style.opacity = (1 / addLevel);
+//			} else {
+//				if(window.chessBoard.isOnBoard(monster.name)) {
+//					title == monster.name;
+//					document.getElementById( monster.name).style.borderColor = "blue";
+//					prioMons.get("blue").push(monster);
+//				} else {
+//					document.getElementById( monster.name).style.borderColor = prioColors.get(12);
+//					prioMons.get(12).push(monster);
+//				}
+////				document.getElementById("td" + monster.name).style.opacity = (1 / 12);
+//			}
+//		} else {
+//			if(window.chessBoard.isOnBoard(monster.name)) {
+//				document.getElementById(monster.name).style.borderColor = "blue";
+//				prioMons.get("blue").push(monster);
+//			} else {
+//				document.getElementById(monster.name).style.borderColor = prioColors.get(1);
+//				prioMons.get(1).push(monster);
+//			}
+////			document.getElementById("td" + monster.name).style.opacity = (1 / 1);
+//		}
 		if(title === undefined) {
 			title = '';
 			if(monster.species1) {
-				if(!(monster.species1.name == "Demon")) {
-					if(title == '') {
-						title += monster.species1.name + " - " + forNextLevel.get(monster.species1.name);
-					} else {
-						title += ", " + monster.species1.name + " - " + forNextLevel.get(monster.species1.name);
-					}
-				} 
+				if(forNextLevel.get(monster.species1.name) != undefined) {
+					if(!(monster.species1.name == "Demon")) {
+						if(title == '') {
+							title += monster.species1.name + " - " + forNextLevel.get(monster.species1.name);
+						} else {
+							title += ", " + monster.species1.name + " - " + forNextLevel.get(monster.species1.name);
+						}
+					} 
+				}
 			}
 			if(monster.species2) {
-				if(!(monster.species2.name == "Demon")) {
-					if(title == '') {
-						title += monster.species2.name + " - " + forNextLevel.get(monster.species2.name);
-					} else {
-						title += ", " + monster.species2.name + " - " + forNextLevel.get(monster.species2.name);
+				if(forNextLevel.get(monster.species2.name) != undefined) {
+					if(!(monster.species2.name == "Demon")) {
+						if(title == '') {
+							title += monster.species2.name + " - " + forNextLevel.get(monster.species2.name);
+						} else {
+							title += ", " + monster.species2.name + " - " + forNextLevel.get(monster.species2.name);
+						}
 					}
 				}
 			}
 			if(monster.class1) {
-				if(title == '') {
-					title += monster.class1.name + " - " + forNextLevel.get(monster.class1.name);
-				} else {
-					title += ", " + monster.class1.name + " - " + forNextLevel.get(monster.class1.name);
+				if(forNextLevel.get(monster.class1.name) != undefined) {
+					if(title == '') {
+						title += monster.class1.name + " - " + forNextLevel.get(monster.class1.name);
+					} else {
+						title += ", " + monster.class1.name + " - " + forNextLevel.get(monster.class1.name);
+					}
 				}
 			}
 			if(monster.class2) {
-				if(title == '') {
-					title += monster.class2.name + " - " + forNextLevel.get(monster.class2.name);
-				} else {
-					title += ", " + monster.class2.name + " - " + forNextLevel.get(monster.class2.name);
+				if(forNextLevel.get(monster.class2.name) != undefined) {
+					if(title == '') {
+						title += monster.class2.name + " - " + forNextLevel.get(monster.class2.name);
+					} else {
+						title += ", " + monster.class2.name + " - " + forNextLevel.get(monster.class2.name);
+					}
 				}
 			}
 		} 
 		document.getElementById(monster.name).title = title;
 	});
-	reorderMonsters(prioMons);
+//	reorderMonsters(prioMons);
 }
 
-function reorderMonsters(prioMons) {
-	let arr = Array.from(prioMons);
-	
-	let tds = new Map();
-	
-	document.getElementById("monsterList").childNodes.forEach(child => {
-		child.childNodes.forEach(td => {
-			tds.set(td.id, td);
-		});
-	});
-	
-	document.getElementById("monsterList").innerHTML = "";
-	
-	let count = 0;
-	let rowCount = 0;
-	
-	let tr;
-	arr.forEach(prio => {
-		prio[1].forEach(monster => {
-			if(count==0) {
-				tr = document.createElement("tr");
-				tr.style.height = "10%";
-				tr.id = "row" + rowCount;
-				document.getElementById("monsterList").appendChild(tr);
-				rowCount++;
-			}
-			
-			let td = tds.get(monster.name);
-			tr.appendChild(td);
-			
-			count++;
-			if(count>= 10) {
-				count = 0;
-			}
-		});
-	});
-}
+//function reorderMonsters(prioMons) {
+//	let arr = Array.from(prioMons);
+//	
+//	let tds = new Map();
+//	
+//	document.getElementById("monsterList").childNodes.forEach(child => {
+//		child.childNodes.forEach(td => {
+//			tds.set(td.id, td);
+//		});
+//	});
+//	
+//	document.getElementById("monsterList").innerHTML = "";
+//	
+//	let count = 0;
+//	let rowCount = 0;
+//	
+//	let tr;
+//	arr.forEach(prio => {
+//		prio[1].forEach(monster => {
+//			if(count==0) {
+//				tr = document.createElement("tr");
+//				tr.style.height = "10%";
+//				tr.id = "row" + rowCount;
+//				document.getElementById("monsterList").appendChild(tr);
+//				rowCount++;
+//			}
+//			
+//			let td = tds.get(monster.name);
+//			tr.appendChild(td);
+//			
+//			count++;
+//			if(count>= 10) {
+//				count = 0;
+//			}
+//		});
+//	});
+//}
 
 function setBoniText(arr) {
 	let ov = document.getElementById("boniOverview");
@@ -771,56 +827,338 @@ function createBoniOverview() {
 	document.body.appendChild(div);
 }
 
+function createForNextLevelOverview() {
+	let div = document.createElement("div");
+	div.className = "forNextLevelOverview";
+	div.id = "forNextLevelOverview";
+	
+	let cl = document.createElement("div");
+	cl.className = "forNextLevelOverviewSpecies";
+	cl.id = "forNextLevelOverviewSpecies";
+	
+	let sp = document.createElement("div");
+	sp.className = "forNextLevelOverviewClasses";
+	sp.id = "forNextLevelOverviewClasses";
+	
+	div.appendChild(cl);
+	div.appendChild(sp);
+	
+	document.body.appendChild(div);
+}
+
+function resetInputs() {
+	document.getElementById("search_1").value = "";
+	document.getElementById("search_2").value = "";
+	document.getElementById("search_3").value = "";
+	document.getElementById("search_4").value = "";
+	document.getElementById("search_5").value = "";
+}
+
 function createMonsterList() {
 	let count = 0;
 	let rowCount = 0;
 	
-	let table = document.createElement("table");
-	table.className = "monsterList fullWidth";
-	table.id = "monsterList";
+	let div = document.createElement("div");
+	div.className = "monsterList";
+	div.id = "monsterList";
 	
-	document.body.appendChild(table);
+	let speciesList = document.createElement("div");
+	speciesList.className = "speciesList fullWidth";
+	speciesList.id = "speciesList";
+	div.appendChild(speciesList);
+	species.forEach(speci => {
+		let button = document.createElement("button");
+		button.className = "speciesTd filter";
+		button.id= "speciesTd" + speci.name;
+		button.innerHTML = speci.name;
+		
+		button.onclick = function() {
+			button.classList.toggle("active");
+			resetInputs();
+			refreshMonsterList();
+		};
+		
+		speciesList.appendChild(button);
+	});
 	
-	let tr;
+	let classesList = document.createElement("div");
+	classesList.className = "classesList fullWidth";
+	classesList.id = "classesList";
+	div.appendChild(classesList);
+	console.log(classes.length)
+	classes.forEach(cl => {
+		let button = document.createElement("button");
+		button.className = "classesTd filter";
+		button.id= "classesTd" + cl.name;
+		button.innerHTML = cl.name;
+		
+		button.onclick = function() {
+			button.classList.toggle("active");
+			resetInputs();
+			refreshMonsterList();
+		};
+		
+		classesList.appendChild(button);
+	});
+	
+	let t1 = document.createElement("div");
+	t1.className = "monsterSubList";
+	t1.id = "monsterSubList1";
+	let h1 = document.createElement("h2");
+	h1.className = "fullWidth one_star";
+	h1.innerHTML = "1*";
+	h1.style.background = costColors.get(1);
+	let s1 = document.createElement("input");
+	s1.id = "search_1";
+	s1.className = "fullWidth one_star_s";
+	t1.appendChild(h1);
+	t1.appendChild(s1);
+	s1.onkeyup = function() {
+		updateMonsterSubList(1, s1.value);
+	}
+	
+	let t2 = document.createElement("div");
+	t2.className = "monsterSubList";
+	t2.id = "monsterSubList2";
+	let h2 = document.createElement("h2");
+	h2.className = "fullWidth two_star";
+	h2.innerHTML = "2*";
+	h2.style.background = costColors.get(2);
+	let s2 = document.createElement("input");
+	s2.id = "search_2";
+	s2.className = "fullWidth two_star_s";
+	t2.appendChild(h2);
+	t2.appendChild(s2);
+	s2.onkeyup = function() {
+		updateMonsterSubList(2, s2.value);
+	}
+	
+	let t3 = document.createElement("div");
+	t3.className = "monsterSubList";
+	t3.id = "monsterSubList3";
+	let h3 = document.createElement("h2");
+	h3.className = "fullWidth three_star";
+	h3.innerHTML = "3*";
+	h3.style.background = costColors.get(3);
+	t3.appendChild(h3);
+	let s3 = document.createElement("input");
+	s3.id = "search_3";
+	s3.className = "fullWidth three_star_s";
+	t3.appendChild(h3);
+	t3.appendChild(s3);
+	s3.onkeyup = function() {
+		updateMonsterSubList(3, s3.value);
+	}
+	
+	let t4 = document.createElement("div");
+	t4.className = "monsterSubList";
+	t4.id = "monsterSubList4";
+	let h4 = document.createElement("h2");
+	h4.className = "fullWidth four_star";
+	h4.innerHTML = "4*";
+	h4.style.background = costColors.get(4);
+	t4.appendChild(h4);
+	let s4 = document.createElement("input");
+	s4.id = "search_4";
+	s4.className = "fullWidth four_star_s";
+	t4.appendChild(h4);
+	t4.appendChild(s4);
+	s4.onkeyup = function() {
+		updateMonsterSubList(4, s4.value);
+	}
+	
+	let t5 = document.createElement("div");
+	t5.className = "monsterSubList";
+	t5.id = "monsterSubList5";
+	let h5 = document.createElement("h2");
+	h5.className = "fullWidth five_star";
+	h5.innerHTML = "5*";
+	h5.style.background = costColors.get(5);
+	t5.appendChild(h5);
+	let s5 = document.createElement("input");
+	s5.id = "search_5";
+	s5.className = "fullWidth five_star_s";
+	t5.appendChild(h5);
+	t5.appendChild(s5);
+	s5.onkeyup = function() {
+		updateMonsterSubList(5, s5.value);
+	}
+	
+	div.appendChild(t1);
+	div.appendChild(t2);
+	div.appendChild(t3);
+	div.appendChild(t4);
+	div.appendChild(t5);
+	
+	document.body.appendChild(div);
+	
+//	let tr;
 	monsters.forEach(monster => {
-		if(count==0) {
-			tr = document.createElement("tr");
-			tr.style.height = "10%";
-			tr.id = "row" + rowCount;
-			table.appendChild(tr);
-			rowCount++;
+		let monsterDiv = createMonsterDiv(monster);
+		if(document.getElementById("monsterSubList" + monster.cost)) {
+			document.getElementById("monsterSubList" + monster.cost).appendChild(monsterDiv);
+			if(!(monsterSubLists.get(monster.cost))) {
+				monsterSubLists.set(monster.cost, []);
+			}
+			monsterSubLists.get(monster.cost).push(monster);
+			monsterDiv.onclick = function(evt) {
+//				if(evt.ctrlKey) {
+//					
+//					let activeButtons = document.getElementsByClassName("active");
+//					
+//					for(let i=0; i<activeButtons.length; i++) {
+//						let button = activeButtons.item(i);
+//						button.classList.toggle("active");
+//					}
+//					
+//					if(monster.species1) {
+//						document.getElementById("speciesTd" + monster.species1.name).classList.toggle("active");
+//					}
+//					if(monster.species2) {
+//						document.getElementById("speciesTd" + monster.species2.name).classList.toggle("active");
+//					}
+//					if(monster.class1) {
+//						document.getElementById("classesTd" + monster.class1.name).classList.toggle("active");
+//					}
+//					if(monster.class2) {
+//						document.getElementById("classesTd" + monster.class2.name).classList.toggle("active");
+//					}
+//					refreshMonsterList();
+//				} else {
+					window.chessBoard.addMonster(monster.name);
+//				}
+			}
+		} else {
+			alert(monster + " has undefined cost");
+		}
+//		if(count==0) {
+//			tr = document.createElement("tr");
+//			tr.style.height = "10%";
+//			tr.id = "row" + rowCount;
+//			div.appendChild(tr);
+//			rowCount++;
+//		}
+		
+//		let td = createMonsterTd(monster);
+//		td.title = monster.name;
+//		td.onclick = function() {
+//			window.chessBoard.addMonster(monster.name);
+//		}
+//		tr.appendChild(td);
+		
+//		count++;
+//		if(count>= 10) {
+//			count = 0;
+//		}
+	});
+}
+
+//function createMonsterTd(monster) {
+//	let td = document.createElement("td");
+//	td.id = monster.name;
+////	td.style.background = "url('media/monster/" + monster.name + ".png') no-repeat center";
+////  td.style.backgroundRepeat = "no-repeat";
+////  td.style.backgroundSize = "cover";
+//  td.className = "monsterTd";
+////	td.innerHTML = monster.name; 	
+//	
+//	let heading = document.createElement("div");
+//	heading.innerHTML = monster.name;
+//	heading.className = "monsterTitle";
+//	
+//	td.appendChild(heading)
+//	
+//	return td;
+//}
+
+function refreshMonsterList() {
+	let activeEntries = [];
+	let activeButtons = document.getElementsByClassName("active");
+	
+	for(let i=0; i<activeButtons.length; i++) {
+		let button = activeButtons.item(i);
+		activeEntries.push(button.innerHTML);
+	}
+	
+	let filterCount = activeEntries.length;
+	
+	monsters.forEach(monster => {
+		let monsterProps = new Map();
+		
+		if(monster.species1) {
+			monsterProps.set(monster.species1.name, true);
 		}
 		
-		let td = createMonsterTd(monster);
-		td.title = monster.name;
-		td.onclick = function() {
-			window.chessBoard.addMonster(monster.name);
+		if(monster.species2) {
+			monsterProps.set(monster.species2.name, true);
 		}
-		tr.appendChild(td);
+
+		if(monster.class1) {
+			monsterProps.set(monster.class1.name, true);
+		}
+
+		if(monster.class2) {
+			monsterProps.set(monster.class2.name, true);
+		}
 		
-		count++;
-		if(count>= 10) {
-			count = 0;
+		let isOut = false;
+		activeEntries.forEach(item => {
+			if(!monsterProps.get(item)) {
+				isOut = true;
+			}
+		});
+		
+		if(!isOut) {
+			if(document.getElementById(monster.name)) {
+				document.getElementById(monster.name).style.display = "block";
+			}
+		} else {
+			if(document.getElementById(monster.name)) {
+				document.getElementById(monster.name).style.display = "none";
+			}
 		}
 	});
 }
 
-function createMonsterTd(monster) {
-	let td = document.createElement("td");
-	td.id = monster.name;
-	td.style.background = "url('media/monster/" + monster.name + ".png') no-repeat center";
-  td.style.backgroundRepeat = "no-repeat";
-  td.style.backgroundSize = "cover";
-  td.className = "monsterTd";
-//	td.innerHTML = monster.name; 	
+function updateMonsterSubList(cost, value) {
+	if(value) {
+		monsterSubLists.get(cost).forEach(monster => {
+			if(monster.name.toLowerCase().indexOf(value.toLowerCase()) != -1) {
+				if(document.getElementById(monster.name)) {
+					document.getElementById(monster.name).style.display = "block";
+				}
+			} else {
+				console.log(document.getElementById(monster.name))
+				if(document.getElementById(monster.name)) {
+					document.getElementById(monster.name).style.display = "none";
+				}
+			}
+		});
+	} else {
+		monsterSubLists.get(cost).forEach(monster => {
+			if(document.getElementById(monster.name)) {
+				document.getElementById(monster.name).style.display = "block";
+			}
+		});
+	}
+}
+
+function createMonsterDiv(monster) {
+	let div = document.createElement("div");
+	div.id = monster.name;
+	div.style.background = "url('media/monster/" + monster.name + ".png') no-repeat center";
+  div.style.backgroundRepeat = "no-repeat";
+  div.style.backgroundSize = "cover";
+  div.className = "monsterDiv";
+//	div.innerHTML = monster.name; 	
 	
 	let heading = document.createElement("div");
 	heading.innerHTML = monster.name;
 	heading.className = "monsterTitle";
 	
-	td.appendChild(heading)
+	div.appendChild(heading)
 	
-	return td;
+	return div;
 }
 
 function checkDemon() {
