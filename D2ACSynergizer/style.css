@@ -2,8 +2,16 @@
 	overflow: hidden;
 }
 
+.menu {
+	height: 20px;
+}
+
+.menuButton {
+	float: left;
+}
+
 .chessBoard {
-	height: 5%;	
+	height: 8%;	
 	border: 2px inset;
 	background: darkred;
 }
@@ -17,7 +25,7 @@ td {
 }
 
 .boniOverview, .forNextLevelOverview {
-	height: 30%;
+	height: 27%;
 	float: left;
 	overflow: auto;
 	background: darkslategrey;
@@ -59,6 +67,7 @@ td {
 	border-left: 2px inset;
 	border-right: 2px inset;
 	border-bottom: 2px inset;
+	overflow: auto;
 }
 
 .monsterSubList:nth-child(odd) {

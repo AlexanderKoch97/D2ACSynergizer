@@ -89,6 +89,18 @@ class ChessBoard extends Map {
 		return this.activeMonsters.length;
 	}
 	
+	reset() {
+		let monsterCountOnBoard = 0;
+		let count = this.getActiveMonsters().length;
+
+		document.getElementById("chessBoard").innerHTML = "";
+		
+		for(let i=0; i < count; i++) {
+			let actMonster = this.getActiveMonsters()[0];
+			this.removeMonster(actMonster.name);
+		}
+	}
+	
 	addMonster(monstername) {
 		let monsterAlreadyOnBoard = false;
 		let count = this.getActiveMonsters().length;
@@ -405,6 +417,7 @@ function initMonsters() {
 function init() {
 	this.chessBoard = new ChessBoard();
 	
+	initMenu();
 	initCostColors();
 	initSpecies();
 	initClasses();
@@ -843,6 +856,61 @@ function createForNextLevelOverview() {
 	div.appendChild(cl);
 	div.appendChild(sp);
 	
+	document.body.appendChild(div);
+}
+
+function initMenu() {
+	let div = document.createElement("div");
+	div.className = "menu fullWidth";
+	div.id = "menu";
+	
+	let downloadTeam = document.createElement("button");
+	downloadTeam.className = "menuButton";
+	downloadTeam.id = "downloadTeam";
+	downloadTeam.innerHTML = "Team downloaden";
+	downloadTeam.onclick = function() {
+		let json = JSON.stringify(window.chessBoard.getActiveMonsters());
+		let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(json);
+		let dlAnchorElem = document.getElementById('downloadAnchorElem');
+		dlAnchorElem.setAttribute("href", dataStr);
+		dlAnchorElem.setAttribute("download", "D2ACSynergizer_team.json");
+		dlAnchorElem.click();
+	}
+	
+	let uploadTeam = document.createElement("input");
+	uploadTeam.className = "menuButton";
+	uploadTeam.type = "file";
+	uploadTeam.id = "uploadTeam";
+	uploadTeam.onchange = function(e) {
+		let file = e.target.files[0]; 
+
+		let reader = new FileReader();
+		reader.readAsText(file,'UTF-8');
+
+		reader.onload = function(readerEvent) {
+			let content = readerEvent.target.result;
+			let team = JSON.parse(content);
+			window.chessBoard.reset();
+			
+			team.forEach(monster => {
+				window.chessBoard.addMonster(monster.name);
+			});
+			
+			uploadTeam.value = '';
+		}
+	}
+	
+	let reset = document.createElement("button");
+	reset.className = "menuButton";
+	reset.id = "downloadTeam";
+	reset.innerHTML = "Neues Team";
+	reset.onclick = function() {
+		window.chessBoard.reset();
+	}
+	
+	div.appendChild(downloadTeam);
+	div.appendChild(uploadTeam);
+	div.appendChild(reset);
 	document.body.appendChild(div);
 }
 
